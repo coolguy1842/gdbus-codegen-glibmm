@@ -3,7 +3,7 @@
 #include <vector>
 #include <glibmm.h>
 #include <giomm.h>
-#include "{{ common_h_name }}"
+#include <{{ common_h_name }}>
 
 {% for interface in interfaces %}
 {% set namespaces = interface.cpp_namespace_name.split("::") %}
@@ -31,7 +31,7 @@ public:
 
     class MethodInvocation;
 
-{% for prop in interface.properties %}
+{% for prop in interface.properties if prop.writable %}
     bool {{ prop.name }}_set({{ prop.cpptype_in }} value);
 {% endfor %}
 protected:
@@ -44,20 +44,27 @@ protected:
 {% endfor %}
 {% for prop in interface.properties %}
 
+{% if prop.writable %}
     /* Handle the setting of a property
      * This method will be called as a result of a call to <PropName>_set
      * and should implement the actual setting of the property value.
      * Should return true on success and false otherwise.
      */
     virtual bool {{ prop.name }}_setHandler({{ prop.cpptype_in }} value) = 0;
+{% endif %}
     virtual {{ prop.cpptype_out }} {{ prop.name }}_get() = 0;
 {% endfor %}
 {% for signal in interface.signals %}
 {% if signal is supported_by_sigc %}
-
+    {% if signal.args|length == 0 %}
+    void {{ signal.name }}_emitter(const std::vector<Glib::ustring> &destination_bus_names);
+    sigc::signal<void()> {{ signal.name }}_signal;
+    sigc::signal<void(const std::vector<Glib::ustring>&)> {{ signal.name }}_selectiveSignal;
+    {% else %}
     void {{ signal.name }}_emitter(const std::vector<Glib::ustring> &destination_bus_names, {{ signal.args|map(attribute='cpptype_in')|join(', ') }});
-    sigc::signal<void, {{ signal.args|map(attribute='cpptype_in')|join(', ') }}> {{ signal.name }}_signal;
-    sigc::signal<void, const std::vector<Glib::ustring>&, {{ signal.args|map(attribute='cpptype_in')|join(', ') }}> {{ signal.name }}_selectiveSignal;
+    sigc::signal<void({{ signal.args|map(attribute='cpptype_in')|join(', ') }})> {{ signal.name }}_signal;
+    sigc::signal<void(const std::vector<Glib::ustring>&, {{ signal.args|map(attribute='cpptype_in')|join(', ') }})> {{ signal.name }}_selectiveSignal;
+    {% endif %}
 {% endif %}
 {% endfor %}
 

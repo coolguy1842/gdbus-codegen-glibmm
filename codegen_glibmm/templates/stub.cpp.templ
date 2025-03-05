@@ -27,9 +27,9 @@ inline std::string specialGetter(Glib::Variant<std::string> variant)
     m_interfaceName("{{ interface.name }}")
 {
 {% for signal in interface.signals if signal is supported_by_sigc %}
-    {{ signal.name }}_signal.connect(sigc::bind<0>(sigc::mem_fun(this, &{{ interface.cpp_class_name_stub }}::{{ signal.name }}_emitter),
+    {{ signal.name }}_signal.connect(sigc::bind<0>(sigc::mem_fun(*this, &{{ interface.cpp_class_name_stub }}::{{ signal.name }}_emitter),
             std::vector<Glib::ustring>({""})) );
-    {{ signal.name }}_selectiveSignal.connect(sigc::mem_fun(this, &{{ interface.cpp_class_name_stub }}::{{ signal.name }}_emitter));
+    {{ signal.name }}_selectiveSignal.connect(sigc::mem_fun(*this, &{{ interface.cpp_class_name_stub }}::{{ signal.name }}_emitter));
 {% endfor %}
 }
 
@@ -46,16 +46,16 @@ guint {{ class_name_with_namespace }}::register_object(
         try {
             introspection_data = Gio::DBus::NodeInfo::create_for_xml(interfaceXml0);
         } catch(const Glib::Error& ex) {
-            g_warning("Unable to create introspection data for %s: %s", object_path.c_str(), ex.what().c_str());
+            g_warning("Unable to create introspection data for %s: %s", object_path.c_str(), ex.what());
             return 0;
         }
     }
 
     Gio::DBus::InterfaceVTable *interface_vtable =
         new Gio::DBus::InterfaceVTable(
-            sigc::mem_fun(this, &{{ interface.cpp_class_name_stub }}::on_method_call),
-            sigc::mem_fun(this, &{{ interface.cpp_class_name_stub }}::on_interface_get_property),
-            sigc::mem_fun(this, &{{ interface.cpp_class_name_stub }}::on_interface_set_property));
+            sigc::mem_fun(*this, &{{ interface.cpp_class_name_stub }}::on_method_call),
+            sigc::mem_fun(*this, &{{ interface.cpp_class_name_stub }}::on_interface_get_property),
+            sigc::mem_fun(*this, &{{ interface.cpp_class_name_stub }}::on_interface_set_property));
 
     guint registration_id;
     try {
@@ -63,7 +63,7 @@ guint {{ class_name_with_namespace }}::register_object(
             introspection_data->lookup_interface("{{ interface.name }}"),
             *interface_vtable);
     } catch(const Glib::Error &ex) {
-        g_warning("Registration of object %s failed: %s", object_path.c_str(), ex.what().c_str());
+        g_warning("Registration of object %s failed: %s", object_path.c_str(), ex.what());
         return 0;
     }
 
@@ -178,13 +178,17 @@ bool {{ class_name_with_namespace }}::on_interface_set_property(
 }
 
 {% for signal in interface.signals if signal is supported_by_sigc %}
+{% if signal.args|length == 0 %}
+void {{ class_name_with_namespace }}::{{ signal.name }}_emitter(
+    const std::vector<Glib::ustring> &destination_bus_names)
+{% else %}
 void {{ class_name_with_namespace }}::{{ signal.name }}_emitter(
     const std::vector<Glib::ustring> &destination_bus_names,
 {%- set comma = joiner() -%}
 {%- for arg in signal.args -%}
 {{ comma() }}{{ arg.cpptype_in }} {{ arg.name }}
 {%- endfor -%})
-{
+{% endif %}{
     std::vector<Glib::VariantBase> paramsList;
 
 {% for arg in signal.args %}
@@ -206,7 +210,7 @@ void {{ class_name_with_namespace }}::{{ signal.name }}_emitter(
 }
 
 {% endfor %}
-{% for prop in interface.properties %}
+{% for prop in interface.properties if prop.writable %}
 
 bool {{ class_name_with_namespace }}::{{ prop.name }}_set({{ prop.cpptype_in }} value)
 {

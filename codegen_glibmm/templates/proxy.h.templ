@@ -4,7 +4,7 @@
 #include <vector>
 #include <glibmm.h>
 #include <giomm.h>
-#include "{{ common_h_name }}"
+#include <{{ common_h_name }}>
 
 {% for interface in interfaces %}
 {% set namespaces = interface.cpp_namespace_name.split("::") %}
@@ -71,14 +71,18 @@ public:
     void {{ prop.name }}_set_finish(const Glib::RefPtr<Gio::AsyncResult> &);
     void {{ prop.name }}_set_sync({{ prop.cpptype_in }});
     {% endif %}
-    sigc::signal<void> &{{ prop.name }}_changed() {
+    sigc::signal<void()> &{{ prop.name }}_changed() {
         return m_{{ prop.name }}_changed;
     }
 
 {% endfor %}
 {% for signal in interface.signals %}
 {% if signal is supported_by_sigc %}
-    sigc::signal<void, {{ signal.args|map(attribute='cpptype_out')|join(', ') }} > {{ signal.name }}_signal;
+    {% if signal.args|length == 0 %}
+    sigc::signal<void()> {{ signal.name }}_signal;
+    {% else %}
+    sigc::signal<void({{ signal.args|map(attribute='cpptype_out')|join(', ') }})> {{ signal.name }}_signal;
+    {% endif %}
 {% endif %}
 {% endfor %}
 
@@ -88,7 +92,6 @@ public:
 protected:
     Glib::RefPtr<Gio::DBus::Proxy> m_proxy;
 
-private:
     {{ interface.cpp_class_name_proxy }}(const Glib::RefPtr<Gio::DBus::Proxy> &proxy);
 
     void handle_signal(const Glib::ustring &sender_name,
@@ -99,7 +102,7 @@ private:
                                    const std::vector<Glib::ustring> &invalidated_properties);
 
 {% for prop in interface.properties %}
-    sigc::signal<void> m_{{ prop.name }}_changed;
+    sigc::signal<void()> m_{{ prop.name }}_changed;
 {% endfor %}
 };
 

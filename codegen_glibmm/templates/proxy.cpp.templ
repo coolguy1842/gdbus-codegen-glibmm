@@ -233,9 +233,9 @@ void {{ class_name_with_namespace }}::handle_properties_changed(
 
 {{ class_name_with_namespace }}::{{ interface.cpp_class_name_proxy }}(const Glib::RefPtr<Gio::DBus::Proxy> &proxy) : m_proxy(proxy)
 {
-    m_proxy->signal_signal().connect(sigc::mem_fun(this, &{{ interface.cpp_class_name_proxy }}::handle_signal));
+    m_proxy->signal_signal().connect(sigc::mem_fun(*this, &{{ interface.cpp_class_name_proxy }}::handle_signal));
     m_proxy->signal_properties_changed().
-        connect(sigc::mem_fun(this, &{{ interface.cpp_class_name_proxy }}::handle_properties_changed));
+        connect(sigc::mem_fun(*this, &{{ interface.cpp_class_name_proxy }}::handle_properties_changed));
 {% if interface.errors %}
     {{ interface.errors_namespace }}::Error::initialize();
 {% endif %}
