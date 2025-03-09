@@ -105,7 +105,7 @@ class CodeGenerator:
         """
         h = self.j2_env.get_template('proxy.h.templ').render(
                 interfaces=self.ifaces,
-                common_h_name=self.common_h.name)
+                common_h_name=self.common_h.name.split("/")[-1])
         self.emit_h_p(h)
 
     def generate_proxy_impl(self):
@@ -114,7 +114,7 @@ class CodeGenerator:
         h = self.j2_env.get_template('proxy.cpp.templ').render(
                 interfaces=self.ifaces,
                 program_version=config.VERSION,
-                proxy_h_name=self.proxy_h.name)
+                proxy_h_name=self.proxy_h.name.split("/")[-1])
         self.emit_cpp_p(h)
 
     def generate_stub_header(self):
@@ -124,7 +124,7 @@ class CodeGenerator:
         """
         h = self.j2_env.get_template('stub.h.templ').render(
                 interfaces=self.ifaces,
-                common_h_name=self.common_h.name)
+                common_h_name=self.common_h.name.split("/")[-1])
         self.emit_h_s(h)
 
     def generate_stub_impl(self):
@@ -134,7 +134,7 @@ class CodeGenerator:
                 interfaces=self.ifaces,
                 node_xmls=self.node_xmls,
                 program_version=config.VERSION,
-                stub_h_name=self.stub_h.name)
+                stub_h_name=self.stub_h.name.split("/")[-1])
         self.emit_cpp_s(h)
 
     def generate_common_header(self):
@@ -145,7 +145,7 @@ class CodeGenerator:
     def generate_common_impl(self):
         h = self.j2_env.get_template('common.cpp.templ').render(
                 interfaces=self.ifaces,
-                common_h_name=self.common_h.name)
+                common_h_name=self.common_h.name.split("/")[-1])
         self.emit_cpp_common(h)
 
     def initialize_jinja(self):

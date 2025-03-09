@@ -3,7 +3,7 @@
 #include <vector>
 #include <glibmm.h>
 #include <giomm.h>
-#include <{{ common_h_name }}>
+#include "./{{ common_h_name }}"
 
 {% for interface in interfaces %}
 {% set namespaces = interface.cpp_namespace_name.split("::") %}

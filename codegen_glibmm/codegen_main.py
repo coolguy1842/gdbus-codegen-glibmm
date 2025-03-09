@@ -21,6 +21,7 @@
 #  (2014) Jonatan Palsson <jonatan.palsson@pelagicore.com>
 
 import sys
+import os
 import optparse
 
 from . import config
@@ -88,6 +89,10 @@ def codegen_main():
         i.post_process(interface_prefix_list, opts.cpp_namespace, opts.errors_namespace)
 
     cpp_code = opts.generate_cpp_code
+    dir_path = "/".join(cpp_code.split('/')[:-1])
+
+    if(not os.path.isdir(dir_path)):
+        os.mkdir(dir_path)
 
     if cpp_code:
         proxy_h = open(cpp_code + "_proxy" + '.h', 'w')

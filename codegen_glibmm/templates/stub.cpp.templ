@@ -1,8 +1,8 @@
+#include "./{{ stub_h_name }}"
+
 {% for node_xml in node_xmls %}
 static const char interfaceXml{{ loop.index0 }}[] = R"XML_DELIMITER({{ node_xml | to_utf8 }})XML_DELIMITER";
 {% endfor %}
-
-#include "{{ stub_h_name }}"
 
 template<class T>
 inline T specialGetter(Glib::Variant<T> variant)
