@@ -94,11 +94,13 @@ protected:
 
     {{ interface.cpp_class_name_proxy }}(const Glib::RefPtr<Gio::DBus::Proxy> &proxy);
 
-    void handle_signal(const Glib::ustring &sender_name,
+    // If extending, call base implementation
+    virtual void handle_signal(const Glib::ustring &sender_name,
                        const Glib::ustring &signal_name,
                        const Glib::VariantContainerBase &parameters);
 
-    void handle_properties_changed(const Gio::DBus::Proxy::MapChangedProperties &changed_properties,
+    // If extending, call base implementation
+    virtual void handle_properties_changed(const Gio::DBus::Proxy::MapChangedProperties &changed_properties,
                                    const std::vector<Glib::ustring> &invalidated_properties);
 
 {% for prop in interface.properties %}

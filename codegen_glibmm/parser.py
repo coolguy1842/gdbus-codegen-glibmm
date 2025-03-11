@@ -106,7 +106,9 @@ class DBusXMLParser:
                 self.state = DBusXMLParser.STATE_IGNORED
 
             # assign docs, if any
-            self._cur_object.doc_string = self._last_comment
+            if(self._cur_object != None):
+                self._cur_object.doc_string = self._last_comment
+
             self._last_comment = None
 
         elif self.state == DBusXMLParser.STATE_INTERFACE:

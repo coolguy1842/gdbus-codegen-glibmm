@@ -124,7 +124,7 @@ class StringType(Type):
     def __init__(self, signature):
         if signature.startswith('ay'):
             signature = 'ay'
-            cpptype = 'std::string'
+            cpptype = 'std::vector<guint8>'
         else:
             signature = signature[0]
             if signature == 's':
